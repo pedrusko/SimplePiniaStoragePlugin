@@ -1,7 +1,7 @@
 /**
  * Simple Pinia plugint to store values in localStorage.
  * Can be used to retrieve values across page reloadings.
- * @author Pedro R. Benito da Rocha <ceronuevenueve@gmail.com>
+ * @author Pedro R. Benito da Rocha <pedrusko@gmail.com>
  * @version 2022.11.10.00
  */
 export function simplePiniaStorePlugin(context) {
