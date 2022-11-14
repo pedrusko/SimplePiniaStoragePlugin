@@ -1,5 +1,5 @@
 # SimplePiniaStoragePlugin
-Simple plugin for Pinia to use LocalStorage or SessionStorage por persistence between page reloads.
+Simple plugin for Pinia to use LocalStorage or SessionStorage for persistence between page reloads.
 
 ## Options
 `useSessionStorage` - If true uses browser session storage. If false or not preset uses browser local storage.
