@@ -2,17 +2,19 @@
  * Simple Pinia plugint to store values in localStorage.
  * Can be used to retrieve values across page reloadings.
  * @author Pedro R. Benito da Rocha <pedrusko@gmail.com>
- * @version 2022.11.10.00
+ * @version 2022.11.11.00
  */
-export function simplePiniaStorePlugin(context) {
+export function storePiniaPlugin(context) {
 
-    const debug = true
+    const debug = false
     var objStore = {}
 
     /**
      * Setup function to restore state.
      */
     function setup() {
+
+        var restoreState = true;
 
         if (debug) {
 
@@ -31,15 +33,53 @@ export function simplePiniaStorePlugin(context) {
         // Restore state only if the retrieving was successfull.
         if (objStore !== null) {
 
-            // Iterate thru the object to restore values.
-            for (const [key, value] of Object.entries(objStore)) {
+            // If storage time has expired destroy the saved store.
+            if (context.options.sessionExpiration) {
 
-                if (debug) {
+                var storAge = Date.now()
 
-                    console.log(`${key}: ${value}`)
+                if (context.options.useSessionStorage) {
+
+                    storAge = sessionStorage.getItem('Store_' + context.store.$id + '-TS')
+                } else {
+
+                    storAge = localStorage.getItem('Store_' + context.store.$id + '-TS')
                 }
 
-                context.store[key] = value
+                // If store age is too old destroy it.
+                console.log(storAge + ' -> ' + (Date.now() - context.options.sessionExpiration))
+                if (storAge < (Date.now() - context.options.sessionExpiration)) {
+
+                    if (debug) {
+
+                        console.log("Destroying stored state because is too old.")
+                    }
+
+                    restoreState = false;
+                    if (context.options.useSessionStorage) {
+
+                        sessionStorage.removeItem('Store_' + context.store.$id)
+                        sessionStorage.removeItem('Store_' + context.store.$id + '-TS')
+                    } else {
+
+                        localStorage.removeItem('Store_' + context.store.$id)
+                        localStorage.removeItem('Store_' + context.store.$id + '-TS')
+                    }
+                }
+            }
+
+            if (restoreState) {
+
+                // Iterate thru the object to restore values.
+                for (const [key, value] of Object.entries(objStore)) {
+
+                    if (debug) {
+
+                        console.log(`${key}: ${value}`)
+                    }
+
+                    context.store[key] = value
+                }
             }
         }
     }
@@ -55,13 +95,15 @@ export function simplePiniaStorePlugin(context) {
             console.log("Saving state...")
         }
 
-        // Store state in JSON format.
+        // Store state in JSON format and time in ECMAScript epoch.
         if (context.options.useSessionStorage) {
 
             sessionStorage.setItem('Store_' + context.store.$id, JSON.stringify(estado))
+            sessionStorage.setItem('Store_' + context.storeTime.$id + '-TS', Date.now)
         } else {
 
             localStorage.setItem('Store_' + context.store.$id, JSON.stringify(estado))
+            localStorage.setItem('Store_' + context.store.$id + '-TS', Date.now())
         }
     }
 
